@@ -97,6 +97,37 @@ textarea:focus{border-color:#d9c4a8;box-shadow:0 0 0 4px rgba(227,173,79,.15)}
 .seat.yeet{animation:yeet .7s ease-in forwards}
 @keyframes yeet{0%{transform:none}30%{transform:translateY(-12px) rotate(-10deg)}100%{transform:translate(50px,-150px) rotate(200deg) scale(.4);opacity:0}}
 
+/* ===== caritas vivas ===== */
+.px .m-open,.px .f-mad,.px .f-joy,.px .f-sad{display:none}
+.talking .px .m-open{display:inline;animation:mouth .3s steps(1,end) infinite}
+@keyframes mouth{0%{opacity:1}50%{opacity:0}}
+.mad .px .f-base,.joy .px .f-base,.sad .px .f-base{display:none}
+.mad .px .f-mad,.joy .px .f-joy,.sad .px .f-sad{display:inline}
+.mad .px .m-open,.joy .px .m-open,.sad .px .m-open{display:none!important}
+.seat.joy svg{animation:hop .55s ease-in-out infinite}
+.seat.mad svg{animation:shake .35s ease-in-out infinite}
+.seat.sad svg{transform:translateY(3px) scale(.95)}
+@keyframes hop{50%{transform:translateY(-6px)}}
+@keyframes shake{25%{transform:translateX(-2px) rotate(-3deg)}75%{transform:translateX(2px) rotate(3deg)}}
+
+/* ===== tribunal de verdad ===== */
+.courtroom{position:relative;margin:12px 12px 0;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(80,50,25,.18);
+  background:repeating-linear-gradient(90deg,rgba(110,70,38,.10) 0 2px,transparent 2px 52px),linear-gradient(#f2e2cc,#ead4b8)}
+.courtroom::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:linear-gradient(#8a5a36,#6f4527)}
+.court-top{position:relative;text-align:center;padding:14px 10px 0}
+.court-seal{display:inline-flex;align-items:center;gap:8px;font:800 10.5px Nunito;letter-spacing:2.2px;color:#7a5232;background:rgba(255,255,255,.55);border:1px solid rgba(138,90,54,.25);padding:4px 12px;border-radius:999px}
+.court-seal i{font-style:normal;font-size:15px}
+.courtroom .judgeBar{padding:10px 14px 0}
+.estrado{margin:0 14px;height:18px;border-radius:0 0 12px 12px;background:linear-gradient(#9a6640,#7b4d2c);box-shadow:inset 0 3px 0 rgba(255,255,255,.18),0 4px 8px rgba(80,50,25,.25);position:relative}
+.estrado::after{content:"🔨";position:absolute;right:14px;top:-9px;font-size:16px}
+.courtroom .scale{margin:12px 12px 0;background:rgba(255,255,255,.88)}
+.courtroom .benches{margin-top:12px;padding:14px 12px 16px;
+  background:repeating-conic-gradient(#e9dac4 0 25%,#dcc6a6 0 50%) 0 0/34px 34px;border-top:6px solid #8a5a36}
+.courtroom .bench{background:rgba(255,255,255,.86);position:relative;padding-bottom:16px}
+.courtroom .bench::after{content:"";position:absolute;left:6px;right:6px;bottom:4px;height:8px;border-radius:3px;
+  background:repeating-linear-gradient(90deg,#8a5a36 0 4px,transparent 4px 13px),linear-gradient(#8a5a36,#8a5a36) top/100% 3px no-repeat}
+.jav.talking svg .m-open{display:inline;animation:mouth .3s steps(1,end) infinite}
+
 /* stats */
 .statsBtn{display:block;margin:2px 16px 0;width:calc(100% - 32px);background:var(--card);color:var(--ink);font:800 14px Nunito;padding:12px;border-radius:14px;box-shadow:var(--sh-sm)}
 .stats{margin:12px 16px 0;display:grid;gap:10px}
@@ -305,7 +336,10 @@ textarea:focus{border-color:#d9c4a8;box-shadow:0 0 0 4px rgba(227,173,79,.15)}
     <div class="ticker hidden" id="ticker"><b>ÚLTIMA HORA</b><div class="run"><span id="tickTxt"></span></div></div>
   </div>
   <div id="noSample" class="banner hidden">Los abogaditos no pudieron conectarse. Intenta de nuevo en un ratito.</div>
+  <div class="courtroom">
+  <div class="court-top"><span class="court-seal"><i>⚖️</i>TRIBUNAL DE ABOGADITOS<i>⚖️</i></span></div>
   <div class="judgeBar" id="judgeBar"><div class="jav" id="judgeAv"></div><div class="say" id="judgeSay"></div></div>
+  <div class="estrado"></div>
 
   <div class="scale">
     <div class="lbls"><span class="f" id="pctF">A favor 50%</span><span class="mid">BALANZA</span><span class="c" id="pctC">50% En contra</span></div>
@@ -323,6 +357,7 @@ textarea:focus{border-color:#d9c4a8;box-shadow:0 0 0 4px rgba(227,173,79,.15)}
   <div class="benches">
     <div class="bench favor"><h3>A FAVOR</h3><div class="seats" id="sFavor"></div></div>
     <div class="bench contra"><h3>EN CONTRA</h3><div class="seats" id="sContra"></div></div>
+  </div>
   </div>
   <button class="statsBtn" id="bStats">📊 Ver gráficas</button>
   <div class="stats hidden" id="stats"></div>
@@ -424,6 +459,8 @@ function avatar(c){
   R(5,7,2,1,lt); R(5,8,1,2,lt);
   // eyes (cuadrados con pupila)
   R(6,9,3,3,W); R(11,9,3,3,W); R(7,10,2,2,K); R(12,10,2,2,K);
+  // ===== cara normal (se esconde cuando cambia la expresión) =====
+  r.push('<g class="f-base">');
   // brows
   if(c.mood==="stern"||c.mood==="grumpy"){ R(6,8,2,1,K); R(8,8,1,1,K); R(12,8,2,1,K); R(11,8,1,1,K); }
   if(c.mood==="worried"){ R(7,8,2,1,K); R(6,7,1,1,K); R(11,8,2,1,K); R(13,7,1,1,K); }
@@ -435,6 +472,19 @@ function avatar(c){
   else if(c.mood==="worried"){ R(9,13,2,2,K); }
   else if(c.mood==="smirk"){ R(8,14,3,1,K); R(11,13,1,1,K); }
   else { R(8,14,4,1,K); }
+  r.push('</g>');
+  // ===== boca abierta (se alterna al hablar) =====
+  r.push('<g class="m-open">'); R(8,13,4,2,K); R(9,14,2,1,"#d35454"); r.push('</g>');
+  // ===== enojado =====
+  r.push('<g class="f-mad">'); R(6,7,1,1,K); R(7,8,2,1,K); R(13,7,1,1,K); R(11,8,2,1,K);
+  R(8,13,4,1,K); R(7,14,1,1,K); R(12,14,1,1,K); R(4,12,2,2,"#ff6b5e"); R(14,12,2,2,"#ff6b5e"); r.push('</g>');
+  // ===== feliz (ojitos ^ ^ y sonrisota) =====
+  r.push('<g class="f-joy">'); R(6,9,3,3,col); R(11,9,3,3,col);
+  R(6,11,1,1,K); R(7,10,1,1,K); R(8,11,1,1,K); R(11,11,1,1,K); R(12,10,1,1,K); R(13,11,1,1,K);
+  R(7,13,6,1,K); R(8,14,4,1,"#d35454"); R(7,14,1,1,K); R(12,14,1,1,K); R(8,15,4,1,K); r.push('</g>');
+  // ===== triste =====
+  r.push('<g class="f-sad">'); R(7,8,2,1,K); R(6,7,1,1,K); R(11,8,2,1,K); R(13,7,1,1,K);
+  R(8,14,4,1,K); R(7,15,1,1,K); R(12,15,1,1,K); R(6,12,1,2,"#5dade2"); R(13,12,1,1,"#5dade2"); r.push('</g>');
   // front accessories
   const G="#e3a72f";
   switch(a){
@@ -491,7 +541,6 @@ async function webSample(prompt,opts={}){
   return {text};
 }
 let sampleP=Promise.resolve(webSample);
-/* Límite amable de juicios gratis por día en este navegador */
 const FREE_PER_DAY=5;
 function trialsToday(){ try{ const d=JSON.parse(localStorage.getItem("abogaditos_dia")||"{}"); return d.day===new Date().toDateString()?d.n:0; }catch(e){ return 0; } }
 function countTrial(){ try{ localStorage.setItem("abogaditos_dia",JSON.stringify({day:new Date().toDateString(),n:trialsToday()+1})); }catch(e){} }
@@ -632,7 +681,9 @@ function refresh(){
   if(!$("stats").classList.contains("hidden")) renderStats();
 }
 function avgScore(id){ const a=args().filter(x=>x.id===id&&x.score); return a.length? a.reduce((s,x)=>s+x.score,0)/a.length : 0; }
-function judgeSay(html,bang){ $("judgeSay").innerHTML=`<b>${JUDGE.name}:</b> ${html}`; if(bang){ const j=$("judgeBar"); j.classList.remove("bang"); void j.offsetWidth; j.classList.add("bang"); } }
+let jTalkT=null;
+function judgeSay(html,bang){ $("judgeSay").innerHTML=`<b>${JUDGE.name}:</b> ${html}`;
+  const jv=$("judgeAv"); if(jv){ jv.classList.add("talking"); clearTimeout(jTalkT); jTalkT=setTimeout(()=>jv.classList.remove("talking"),Math.min(3500,600+String(html).replace(/<[^>]+>/g,"").length*35)); } if(bang){ const j=$("judgeBar"); j.classList.remove("bang"); void j.offsetWidth; j.classList.add("bang"); } }
 function addEl(html){ const e=$("empty"); if(e) e.remove(); const d=document.createElement("div"); d.innerHTML=html; const el=d.firstElementChild; $("log").appendChild(el); el.scrollIntoView({behavior:"smooth",block:"end"}); return el; }
 function addSys(t,gavel){ addEl(`<div class="sys ${gavel?"gavel":""}">${t}</div>`); }
 function toast(t){ document.querySelectorAll(".toast").forEach(x=>x.remove()); const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2600); }
@@ -850,6 +901,7 @@ function objection(c,lc,last){
   stopAuto(); beep("obj");
   const o=document.createElement("div"); o.className="objBang"; o.innerHTML="<div>¡Objeción!</div>"; document.body.appendChild(o); setTimeout(()=>o.remove(),950);
   judgeSay(`${esc(c.name)} no está de acuerdo. Dale, habla.`,true);
+  mood(c.id,"mad",1800); if(lc&&lc.id) mood(lc.id,"sad",1800);
   setTimeout(()=>speak(c,"obj",{name:lc.name,text:last.text}),500);
 }
 
@@ -891,6 +943,10 @@ async function breakingNews(text,who){
   prefetch();
 }
 
+/* ================= CARITAS ================= */
+function mood(id,m,ms){ const s=$("seat"+id); if(!s) return; s.classList.remove("mad","joy","sad"); if(m) s.classList.add(m); if(ms) setTimeout(()=>s.classList.remove(m),ms); }
+function verdictFaces(win){ S.chars.forEach(c=>{ if(c.active) mood(c.id,c.side===win?"joy":"mad"); }); }
+
 /* ================= EXPEL ================= */
 function expel(id){
   const c=byId(id); if(!c||!c.active) return;
@@ -900,7 +956,7 @@ function expel(id){
   closeModal(); beep("yeet");
   c.active=false;
   const seat=$("seat"+id);
-  if(seat){ seat.classList.remove("talking","next"); seat.classList.add("yeet"); setTimeout(()=>{ seat.classList.remove("yeet"); seat.classList.add("out"); },700); }
+  if(seat){ seat.classList.remove("talking","next","mad","joy"); seat.classList.add("sad"); setTimeout(()=>{ seat.classList.add("yeet"); setTimeout(()=>{ seat.classList.remove("yeet","sad"); seat.classList.add("out"); },700); },650); }
   document.querySelectorAll(`.msg[data-cid="${id}"]`).forEach(m=>{ m.classList.add("gone"); const w=m.querySelector(".who span"); if(w&&!w.querySelector(".tag")) w.insertAdjacentHTML("beforeend",'<span class="tag">EXPULSADO</span>'); });
   const Q=[`👋 Chao, ${c.name}. Te vas pa’ fuera.`,`👋 ${c.name}, gracias por participar… pero hasta aquí.`,`👋 ${c.name} queda fuera. Lo que dijo ya no cuenta.`,`👋 El público habló: adiós, ${c.name}.`];
   addSys(esc(Q[Math.floor(Math.random()*Q.length)]),true);
@@ -987,7 +1043,7 @@ function userVerdict(){
 function showUserVerdict(win,mvpId){
   S.userPick={win,mvp:mvpId};
   const mvp=mvpId?byId(mvpId):null;
-  beep("win"); confetti();
+  beep("win"); confetti(); verdictFaces(win);
   judgeSay(`El público tomó el mazo: gana <b>${win==="favor"?"el lado a favor":"el lado en contra"}</b> 🔨`,true);
   addSys(`🔨 TU VEREDICTO: gana ${win==="favor"?"A FAVOR":"EN CONTRA"}${mvp?` · Tu MVP: ${esc(mvp.name)}`:""}`,true);
   modal(`<div class="sheet"><div class="vHead"><div class="wa big" style="margin:0 auto">🔨</div>
@@ -1030,7 +1086,7 @@ function showVerdict(v){
   const win=v.ganador==="contra"?"contra":"favor";
   const mvp=byId(+v.mvp), worst=byId(+v.peor);
   const list=(v.puntajes||[]).filter(p=>byId(+p.id)).sort((a,b)=>b.puntaje-a.puntaje);
-  beep("win"); confetti();
+  beep("win"); confetti(); verdictFaces(win);
   judgeSay(`Ya decidí: gana <b>${win==="favor"?"el lado a favor":"el lado en contra"}</b> 🔨`,true);
   addSys(`🔨 VEREDICTO: gana ${win==="favor"?"A FAVOR":"EN CONTRA"}${mvp?` · MVP: ${esc(mvp.name)}`:""}`,true);
   modal(`<div class="sheet">
