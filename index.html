@@ -97,6 +97,13 @@ textarea:focus{border-color:#d9c4a8;box-shadow:0 0 0 4px rgba(227,173,79,.15)}
 .seat.yeet{animation:yeet .7s ease-in forwards}
 @keyframes yeet{0%{transform:none}30%{transform:translateY(-12px) rotate(-10deg)}100%{transform:translate(50px,-150px) rotate(200deg) scale(.4);opacity:0}}
 
+/* ===== trajes ===== */
+.px .suit{display:none}
+body.trajes .px .suit{display:inline}
+.optRow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px auto 0;max-width:560px}
+.optRow .lbl2{width:100%;text-align:center;font-weight:800;font-size:12px;letter-spacing:1.5px;color:var(--mut,#8a7e74);margin-bottom:2px}
+.lvl.on,#bSuit.on{background:#3a2a1e;color:#fff}
+.lvl.on.l3{background:#7a1f1f}
 /* ===== caritas vivas ===== */
 .px .m-open,.px .f-mad,.px .f-joy,.px .f-sad{display:none}
 .talking .px .m-open{display:inline;animation:mouth .3s steps(1,end) infinite}
@@ -312,6 +319,9 @@ textarea:focus{border-color:#d9c4a8;box-shadow:0 0 0 4px rgba(227,173,79,.15)}
     <textarea id="idea" maxlength="220" placeholder="Ej: Las escuelas deberían tener semana de 4 días"></textarea>
     <div class="chips" id="chips"></div>
   </div>
+  <div class="optRow" id="lvlRow"><div class="lbl2">DIFICULTAD</div>
+    <button class="pill lvl" data-l="0">🟢 Fácil</button><button class="pill lvl" data-l="1">🟡 Normal</button><button class="pill lvl" data-l="2">🔴 Difícil</button><button class="pill lvl l3" data-l="3">💀 Imposible</button></div>
+  <div class="optRow"><button class="pill" id="bSuit">👔 Trajes: sí</button></div>
   <button class="big" id="start">Abrir el juicio ⚖️</button>
   <button class="mkBtn" id="bMake"><span id="mkAv"></span><span><b id="mkT">🎨 Crea tu abogadito</b><small id="mkS">Nuevo: diseña el tuyo y mételo al tribunal</small></span></button>
   <div class="how">
@@ -485,6 +495,11 @@ function avatar(c){
   // ===== triste =====
   r.push('<g class="f-sad">'); R(7,8,2,1,K); R(6,7,1,1,K); R(11,8,2,1,K); R(13,7,1,1,K);
   R(8,14,4,1,K); R(7,15,1,1,K); R(12,15,1,1,K); R(6,12,1,2,"#5dade2"); R(13,12,1,1,"#5dade2"); r.push('</g>');
+  // ===== traje (se ve cuando los trajes están activados) =====
+  { const S2="#2f3342", T="#b8322a";
+    r.push('<g class="suit">'); R(3,11,1,4,S2); R(16,11,1,4,S2); R(4,15,12,2,S2); R(5,17,10,1,S2); R(15,15,1,1,shade(S2,-20));
+    R(8,15,4,1,W); R(9,15,2,1,T); R(9,16,2,2,T); R(7,16,1,1,"#e3ad4f"); R(12,16,1,1,"#e3ad4f");
+    R(6,18,2,2,"#262a36"); R(12,18,2,2,"#262a36"); r.push('</g>'); }
   // front accessories
   const G="#e3a72f";
   switch(a){
@@ -629,6 +644,9 @@ function openMaker(){
   draw();
 }
 $("bMake").onclick=()=>{ beep("tap"); openMaker(); };
+document.querySelectorAll(".lvl").forEach(b=>b.onclick=()=>{ beep("tap"); setLvl(+b.dataset.l); toast(["🟢 Fácil: los rivales están flojitos","🟡 Normal","🔴 Difícil: los rivales vienen con todo","💀 Imposible: buena suerte… 🥶"][+b.dataset.l]); });
+$("bSuit").onclick=()=>{ beep("tap"); setTrajes(!TRAJES); };
+setTimeout(()=>{ setLvl(LVL); setTrajes(TRAJES); },0);
 updateMakeBtn();
 
 /* ================= RENDER ================= */
@@ -734,7 +752,7 @@ function buildPrompt(c,mode,extra){
   const persona=`Eres "${c.name}", ${c.role}, personaje de un juego de debate tipo tribunal, pero relajado (divertido y con argumentos reales).
 Tu historia: ${c.bio}
 Tu estilo: ${c.style}
-Estás ${c.side==="favor"?"A FAVOR":"EN CONTRA"} de esta idea: "${S.idea}".${newsBlock()}`;
+Estás ${c.side==="favor"?"A FAVOR":"EN CONTRA"} de esta idea: "${S.idea}".${newsBlock()}${lvlNote(c)}`;
   let task;
   if(mode==="news") task=`¡NOTICIA DE ÚLTIMA HORA recién presentada en el juicio!: "${extra}"\nReacciona a ESTA noticia: si ayuda a tu bando, úsala con fuerza; si te perjudica, cuestiónala, ponla en duda o explica por qué no cambia nada. Menciona la noticia directamente.`;
   else
@@ -743,6 +761,20 @@ Estás ${c.side==="favor"?"A FAVOR":"EN CONTRA"} de esta idea: "${S.idea}".${new
   else task=`Lo dicho recientemente:\n${recentContext()}\n\nTu turno. Da UN argumento nuevo, sin repetir lo dicho${c.spoken>0?" ni lo que tú ya dijiste":""}. Si el rival dijo algo, rebátelo directo.`;
   return `${persona}\n\n${task}\n\nCómo hablar: súper relajado y natural, como si estuvieras hablando con amigos en una conversación casual. Tutea, usa palabras cotidianas de Latinoamérica, frases cortas, un poquito de humor. NADA formal: prohibido "señoría", "honorable", "estimados", "cabe destacar", "en conclusión" o lenguaje de abogado. Que suene como una persona real hablando, con tu personalidad. Máximo 40 palabras. Solo lo que dices: sin comillas, sin tu nombre, sin acotaciones.`;
 }
+/* ===== dificultad ===== */
+const LVLS=["Fácil","Normal","Difícil","Imposible"];
+let LVL=1; try{ const v=+localStorage.getItem("abogaditos_lvl"); if(v>=0&&v<=3) LVL=v; }catch(e){}
+function lvlNote(c){
+  if(LVL===1) return "";
+  if(c.side==="favor") return LVL===0?"\nModo fácil: tienes ventaja, habla con confianza.":"";
+  return ["\nModo FÁCIL: eres un rival flojito. Tus argumentos son débiles, dudas y a veces casi le das la razón al otro bando.","",
+    "\nModo DIFÍCIL: eres un rival muy filoso. Usa tu mejor argumento, con un dato o ejemplo concreto, y ataca el punto más débil de la idea.",
+    "\nModo IMPOSIBLE: eres implacable. Destroza la idea con el argumento más fuerte posible, con datos, ejemplos y lógica sin huecos. Cero piedad (pero sin insultar)."][LVL];
+}
+function lvlJudge(){ return LVL===3?"\nModo IMPOSIBLE: sé muy exigente con el bando A FAVOR; solo gana si sus argumentos fueron claramente mejores.":LVL===0?"\nModo FÁCIL: si hay duda, dale el beneficio al bando A FAVOR.":""; }
+function setLvl(v){ LVL=v; try{ localStorage.setItem("abogaditos_lvl",v); }catch(e){} document.querySelectorAll(".lvl").forEach(b=>b.classList.toggle("on",+b.dataset.l===v)); }
+let TRAJES=true; try{ TRAJES=localStorage.getItem("abogaditos_trajes")!=="0"; }catch(e){}
+function setTrajes(v){ TRAJES=v; try{ localStorage.setItem("abogaditos_trajes",v?"1":"0"); }catch(e){} document.body.classList.toggle("trajes",v); const b=$("bSuit"); if(b){ b.textContent=v?"👔 Trajes: sí":"👕 Trajes: no"; b.classList.toggle("on",v); } }
 function newsBlock(){
   if(!S.news.length) return "";
   return `\nNOTICIAS DE ÚLTIMA HORA presentadas durante el juicio (puedes usarlas o cuestionarlas):\n`+S.news.map((n,i)=>`${i+1}. ${n}`).join("\n");
@@ -1063,7 +1095,7 @@ async function aiVerdict(){
   judgeSay("Dame un segundo que lo pienso… 🤔",true);
   modal(`<div class="sheet" style="text-align:center"><div style="width:96px;margin:6px auto;animation:bob .3s steps(2) infinite alternate">${avatar(JUDGE)}</div><h2>La jueza lo está pensando…</h2><p class="role">Repasando todo lo que dijeron</p><span class="thinking"><i></i><i></i><i></i></span></div>`);
   const transcript=valid.map(x=>{const c=byId(x.id);return `[id ${c.id}] ${c.name} (${c.side==="favor"?"A FAVOR":"EN CONTRA"})${x.vote===1?" [público: 👍]":x.vote===-1?" [público: 👎]":""}: ${x.text}`}).join("\n");
-  const prompt=`Eres la Jueza Balanza, jueza imparcial de un juego de debate. La idea en juicio es: "${S.idea}".${newsBlock()}
+  const prompt=`Eres la Jueza Balanza, jueza imparcial de un juego de debate. La idea en juicio es: "${S.idea}".${newsBlock()}${lvlJudge()}
 Transcripción de los argumentos válidos (con reacciones del público):
 ${transcript}
 
